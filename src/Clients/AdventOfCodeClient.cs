@@ -3,11 +3,11 @@
 public class AdventOfCodeClient(
     ILogger<AdventOfCodeClient> _logger,
     FileSystemCache _fileSystemCache,
-    HttpClient httpClient)
+    HttpClient _httpClient)
 {
     private readonly ILogger<AdventOfCodeClient> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly FileSystemCache _fileSystemCache = _fileSystemCache ?? throw new ArgumentNullException(nameof(_fileSystemCache));
-    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+    private readonly HttpClient _httpClient = _httpClient ?? throw new ArgumentNullException(nameof(_httpClient));
 
     private int _year;
     private int _day;
