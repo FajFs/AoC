@@ -1,0 +1,13 @@
+﻿global using AoC.Clients;
+global using AoC.Contracts;
+global using AoC.Extensions;
+global using AoC.Interfaces;
+global using AoC.Year2024;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;
+global using Serilog;
+global using Serilog.Events;
+global using System.Net;
+global using System.Text.RegularExpressions;
