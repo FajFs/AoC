@@ -1,6 +1,4 @@
-﻿using AoC.Days;
-
-namespace AoC.Year2024;
+﻿namespace AoC.Year2024;
 public partial class DayTwo(
     ILogger<DayTwo> _logger,
     AdventOfCodeClient _client)

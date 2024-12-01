@@ -1,6 +1,4 @@
-﻿using AoC.Days;
-
-namespace AoC.Extensions;
+﻿namespace AoC.Extensions;
 public static class Extensions
 {
     private record AocCookie(string Name, string Value);
@@ -37,6 +35,9 @@ public static class Extensions
                 cookieContainer.Add(Uri, new Cookie(cookie!.Name, cookie.Value));
                 return new HttpClientHandler() { CookieContainer = cookieContainer };
             });
+
+        //register services
+        builder.Services.AddSingleton<FileSystemCache>();
 
         // register all days
         builder.Services.AddRangeTransient<IDay>();

@@ -8,8 +8,5 @@ public interface IDay
 public static class DayExtensions
 {
     public static async Task SolveAsync(this IDay day)
-    {
-        await day.SolvePart1();
-        await day.SolvePart2();
-    }
+        => await Task.WhenAll(day.SolvePart1(), day.SolvePart2());
 }
