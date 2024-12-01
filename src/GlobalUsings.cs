@@ -1,7 +1,6 @@
 ﻿global using AoC.Clients;
-global using AoC.Contracts;
+global using AoC.Days;
 global using AoC.Extensions;
-global using AoC.Interfaces;
 global using AoC.Year2024;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;

@@ -1,6 +1,10 @@
-﻿namespace AoC.Extensions;
+﻿using AoC.Days;
+
+namespace AoC.Extensions;
 public static class Extensions
 {
+    private record AocCookie(string Name, string Value);
+
     public static IHostApplicationBuilder AddApplicationDefaults(this IHostApplicationBuilder builder)
     {
         // add serilog
@@ -19,16 +23,18 @@ public static class Extensions
         builder.Configuration.AddUserSecrets<AocCookie>();
 
         // add http client
+        var Uri = new Uri("https://adventofcode.com/");
+        var cookie = builder.Configuration.GetSection(nameof(AocCookie)).Get<AocCookie>();
+
         builder.Services.AddHttpClient<AdventOfCodeClient>()
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri("https://adventofcode.com/");
+                client.BaseAddress = Uri;
             })
             .ConfigurePrimaryHttpMessageHandler(() =>
             {
-                var cookie = builder.Configuration.GetSection(nameof(AocCookie)).Get<AocCookie>();
                 var cookieContainer = new CookieContainer();
-                cookieContainer.Add(new Uri("https://adventofcode.com/"), new Cookie(cookie!.Name, cookie.Value));
+                cookieContainer.Add(Uri, new Cookie(cookie!.Name, cookie.Value));
                 return new HttpClientHandler() { CookieContainer = cookieContainer };
             });
 

@@ -1,4 +1,4 @@
-﻿namespace AoC.Interfaces;
+﻿namespace AoC.Days;
 public interface IDay
 {
     public Task SolvePart1();
