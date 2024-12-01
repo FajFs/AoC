@@ -1,8 +1,10 @@
 ﻿namespace AoC.Clients;
 
 public class AdventOfCodeClient(
+    ILogger<AdventOfCodeClient> _logger,
     HttpClient httpClient)
 {
+    private readonly ILogger<AdventOfCodeClient> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
     private int _year;
@@ -20,7 +22,7 @@ public class AdventOfCodeClient(
             ? await FetchInputFromAdventOfCode()
             : await LocalFileSystemLookup() ?? await FetchInputFromAdventOfCode();
 
-        return input ?? throw new Exception("No data found");
+        return input ?? throw new Exception($"Failed to fetch input for year {_year} day {_day}");
     }
 
     private async Task<string?> LocalFileSystemLookup()
@@ -31,7 +33,12 @@ public class AdventOfCodeClient(
     private async Task<string?> FetchInputFromAdventOfCode()
     {
         var response = await _httpClient.GetAsync(Url);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to fetch input from Advent of Code. Status code: {statusCode} Reason: {reason}", response.StatusCode, response.ReasonPhrase);
+            Environment.Exit(1);
+        }
+
         var content = await response.Content.ReadAsStringAsync();
 
         //trim last line if it's empty
@@ -43,6 +50,10 @@ public class AdventOfCodeClient(
     }
 
     private async Task StoreDataInLocalFileSystem(string content)
-        => await File.WriteAllTextAsync(FileName, content);
+    {
+        if (!Directory.Exists("../../../Inputs"))
+            Directory.CreateDirectory("../../../Inputs");
+        await File.WriteAllTextAsync(FileName, content);
+    }
 }
 

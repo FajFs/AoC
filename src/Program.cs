@@ -1,4 +1,6 @@
-﻿var builder = Host.CreateApplicationBuilder(args);
+﻿using AoC.Days;
+
+var builder = Host.CreateApplicationBuilder(args);
 builder.AddApplicationDefaults();
 var app = builder.Build(); 
 
