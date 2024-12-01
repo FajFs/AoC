@@ -33,7 +33,7 @@ public class AdventOfCodeClient(
     private async Task<string?> FetchInputFromAdventOfCode()
     {
         var response = await _httpClient.GetAsync(Url);
-        if (!response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode is false)
         {
             _logger.LogError("Failed to fetch input from Advent of Code. Status code: {statusCode} Reason: {reason}", response.StatusCode, response.ReasonPhrase);
             Environment.Exit(1);
@@ -51,7 +51,7 @@ public class AdventOfCodeClient(
 
     private async Task StoreDataInLocalFileSystem(string content)
     {
-        if (!Directory.Exists("../../../Inputs"))
+        if (Directory.Exists("../../../Inputs") is false)
             Directory.CreateDirectory("../../../Inputs");
         await File.WriteAllTextAsync(FileName, content);
     }
