@@ -45,6 +45,20 @@ public static class Extensions
         return builder;
     }
 
+    public static IDay ResolveAocDay(this IHost app, int? year = null, int? day = null)
+    {
+        var resolvedYear = year ?? DateTime.Now.Year;
+        var resolvedDay = day ?? DateTime.Now.Day;
+
+        var fullName = $"AoC.Year{resolvedYear}.Day{resolvedDay:D2}";
+
+        var type = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .FirstOrDefault(t => t.FullName == fullName && typeof(IDay).IsAssignableFrom(t)) 
+            ?? throw new InvalidOperationException($"Type '{fullName}' not found or does not implement IDay.");
+
+        return (IDay)app.Services.GetRequiredService(type);
+    }
 
     private static IServiceCollection AddRangeTransient<TService>(this IServiceCollection services)
     {

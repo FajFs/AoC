@@ -1,10 +1,10 @@
 ﻿namespace AoC.Year2024;
-public partial class DayTwo(
-    ILogger<DayTwo> _logger,
+public partial class Day02(
+    ILogger<Day02> _logger,
     AdventOfCodeClient _client)
     : IDay
 {
-    private readonly ILogger<DayTwo> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
+    private readonly ILogger<Day02> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly AdventOfCodeClient _client = _client ?? throw new ArgumentNullException(nameof(_client));
 
     public async Task SolvePart1()
