@@ -47,7 +47,7 @@ public partial class Day02(
         var reports = input.Split('\n')
             .Select(line => AocHelpers.MatchDigit()
                 .Matches(line)
-                .Select(m => int.Parse(m.Value))
+                .Select(x => int.Parse(x.Value))
                 .ToList()
             );
 
