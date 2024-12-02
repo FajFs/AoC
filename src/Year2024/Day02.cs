@@ -11,9 +11,9 @@ public partial class Day02(
     {
         var diff = AocHelpers.AbsolutValue(a - b);
         return diff >= 1 && diff <= 3;
-    } 
+    }
 
-    public static bool IsAscending(int a, int b) 
+    public static bool IsAscending(int a, int b)
         => a < b;
 
     private static bool ValidateReport(List<int> report)
@@ -53,15 +53,10 @@ public partial class Day02(
 
         var result = reports
             .Count(report =>
-            {
-                if (ValidateReport(report))
-                    return true;
-
-                // Try removing one element at a time and check if the report is valid
-                return report
+                ValidateReport(report) 
+                || report
                     .Select((_, index) => report.Where((_, i) => i != index).ToList())
-                    .Any(ValidateReport);
-            });
+                    .Any(ValidateReport));
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
     }
