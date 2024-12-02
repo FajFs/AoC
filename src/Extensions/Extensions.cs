@@ -38,6 +38,7 @@ public static class Extensions
 
         //register services
         builder.Services.AddSingleton<FileSystemCache>();
+        builder.Services.AddSingleton<AocHelper>();
 
         // register all days
         builder.Services.AddRangeTransient<IDay>();
