@@ -9,7 +9,7 @@ public partial class Day03(
 
     public async Task SolvePart1()
     {
-        var input = await _client.GetInputAsync(2024, 2);
+        var input = await _client.GetInputAsync(2024, 3);
 
         //_logger.LogInformation("{part}: {result}", nameof(SolvePart1), result);
     }
@@ -17,7 +17,7 @@ public partial class Day03(
 
     public async Task SolvePart2()
     {
-        var input = await _client.GetInputAsync(2024, 2);
+        var input = await _client.GetInputAsync(2024, 3);
 
         //_logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
     }
