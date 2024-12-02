@@ -1,17 +1,11 @@
 ﻿namespace AoC.Year2024;
-public partial class Day01(
+public class Day01(
     ILogger<Day01> _logger,
     AdventOfCodeClient _client)
     : IDay
 {
     private readonly ILogger<Day01> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly AdventOfCodeClient _client = _client ?? throw new ArgumentNullException(nameof(_client));
-
-    [GeneratedRegex(@"\d+", RegexOptions.Compiled)]
-    private static partial Regex MatchDigit();
-
-    private static int AbsolutValue(int x) 
-        => x < 0 ? -x : x;
 
     public async Task SolvePart1()
     {
@@ -20,7 +14,7 @@ public partial class Day01(
         var lerftRight = input.Split('\n')
             .Select(line =>
             {
-                var matches = MatchDigit().Matches(line).ToArray();
+                var matches = AocHelpers.MatchDigit().Matches(line).ToArray();
                 return (
                     Left: int.Parse(matches.First().Value),
                     Right: int.Parse(matches.Last().Value)
@@ -36,7 +30,7 @@ public partial class Day01(
             .OrderByDescending(x => x);
 
         var result = leftList
-            .Zip(rightList, (l, r) => AbsolutValue(l - r))
+            .Zip(rightList, (l, r) => AocHelpers.AbsolutValue(l - r))
             .Sum();
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart1), result);
@@ -50,7 +44,7 @@ public partial class Day01(
         var leftRight = input.Split('\n')
             .Select(line =>
             {
-                var matches = MatchDigit().Matches(line).ToArray();
+                var matches = AocHelpers.MatchDigit().Matches(line).ToArray();
                 return (
                     Left: int.Parse(matches.First().Value),
                     Right: int.Parse(matches.Last().Value)
