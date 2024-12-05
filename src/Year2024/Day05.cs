@@ -12,22 +12,20 @@ public partial class Day05(
     [GeneratedRegex(@"(\d+)\|(\d+)", RegexOptions.Compiled)]
     public partial Regex RulePairRegex();
 
-    private static bool EnsureValidOrder(List<(int before, int after)> orderingRules, List<int> update)
+    private static bool EnsureValidPagesOrder(List<(int before, int after)> orderingRules, List<int> pages)
     {
-        for (int i = 0; i < update.Count; i++)
+        for (int i = 0; i < pages.Count; i++)
         {
-            var currentPage = update.ElementAt(i);
-            
+            var currentPage = pages.ElementAt(i);
             var dependentRules = orderingRules.Where(rule => rule.after == currentPage);
-            foreach (var (beforeRule, _) in dependentRules)
+            foreach (var (beforePage, _) in dependentRules)
             {
-                int expectedBeforePage = beforeRule;
-                int expectedBeforeIndex = update.IndexOf(expectedBeforePage);
+                int expectedBeforeIndex = pages.IndexOf(beforePage);
                 if (expectedBeforeIndex > i)
                 {
-                    //swap the two elements and return false
-                    update[expectedBeforeIndex] = currentPage;
-                    update[i] = expectedBeforePage;
+                    var swapPage = pages[expectedBeforeIndex];
+                    pages[expectedBeforeIndex] = currentPage;
+                    pages[i] = swapPage;
                     return false;
                 }
             }
@@ -43,15 +41,14 @@ public partial class Day05(
         var orderingRules = groups.First()
             .Split("\n")
             .Select(x => RulePairRegex().Match(x))
-            .Select(x => (int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)))
+            .Select(rule => (int.Parse(rule.Groups[1].Value), int.Parse(rule.Groups[2].Value)))
             .ToList();
 
         var result = groups.Last()
             .Split("\n")
             .Select(x => x.Split(",").Select(int.Parse).ToList())
-            .Where(x => EnsureValidOrder(orderingRules, x))
-            .Select(x => x.ElementAt(x.Count / 2))
-            .Sum();
+            .Where(pages => EnsureValidPagesOrder(orderingRules, pages))
+            .Sum(pages => pages.ElementAt(pages.Count / 2));
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart1), result);
     }
@@ -59,6 +56,7 @@ public partial class Day05(
     public async Task SolvePart2()
     {
         var input = await _client.GetInputAsync(2024, 5);
+
         var groups = input.Split("\n\n");
         var orderingRules = groups.First()
             .Split("\n")
@@ -69,15 +67,14 @@ public partial class Day05(
         var result = groups.Last()
             .Split("\n")
             .Select(x => x.Split(",").Select(int.Parse).ToList())
-            .Where(x => EnsureValidOrder(orderingRules, x) is false)
-            .Select(x =>
+            .Where(pages => EnsureValidPagesOrder(orderingRules, pages) is false)
+            .Select(pages =>
             {
                 //LMAO
-                while (EnsureValidOrder(orderingRules, x) is false){}
-                return x;
+                while (EnsureValidPagesOrder(orderingRules, pages) is false) { }
+                return pages;
             })
-            .Select(x => x.ElementAt(x.Count / 2))
-            .Sum();
+            .Sum(x => x.ElementAt(x.Count / 2));
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
     }
