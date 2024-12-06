@@ -44,35 +44,31 @@ public partial class Day06(
             _ => throw new InvalidOperationException("Invalid velocity")
         };
 
-    private (bool IsStuck, int visitedCount) SimulateGuardMovement(char[][] map, Guard startPoint)
+    private bool SimulateGuardMovement(char[][] map, Guard startPoint)
     {
         var guard = startPoint with { Velocity = new Velocity(0, -1) };
-        var visitedTiles = new bool[map.Length, map[0].Length, 4]; //4 is the number of possible velocities
-        var visitedCount = 0;
+        var visitedTilesWithVelocity = new bool[map.Length, map[0].Length, 4]; //4 is the number of possible velocities
         while (true)
         {
             var velocityIndex = MapVelocityToIndex(guard.Velocity);
             //if we have visited this point before, we are stuck
-            if (visitedTiles[guard.Y, guard.X, velocityIndex])
-                return (true, 0);
+            if (visitedTilesWithVelocity[guard.Y, guard.X, velocityIndex])
+                return true;
 
-            visitedTiles[guard.Y, guard.X, velocityIndex] = true;
-            if (map[guard.Y][guard.X] != Visited)
-                visitedCount++;
+            visitedTilesWithVelocity[guard.Y, guard.X, velocityIndex] = true;
 
             //mark the current point as visited
-            map[guard.Y][guard.X] =  Visited;
+            map[guard.Y][guard.X] = Visited;
+
             var nextX = guard.X + guard.Velocity.Dx;
             var nextY = guard.Y + guard.Velocity.Dy;
 
             //if we are out of bounds, we are not stuck
             if (nextY < 0 || nextY >= map.Length || nextX < 0 || nextX >= map[nextY].Length)
-                return (false, visitedCount);
+                return false;
 
             if (map[nextY][nextX] == Obstacle)
-            {
                 guard.Velocity = TurnGuardVelocityRight(guard.Velocity);
-            }
             else
             {
                 guard.X = nextX;
@@ -89,8 +85,8 @@ public partial class Day06(
             .ToArray();
         
         var startPoint = GetGuardStartPoint(map);
-        var result = SimulateGuardMovement(map, startPoint)
-            .visitedCount;
+        SimulateGuardMovement(map, startPoint);
+        var result = map.Sum(x => x.Count(y => y == Visited));
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart1), result);
     }
@@ -116,14 +112,10 @@ public partial class Day06(
                     continue;
 
                 mapCopy[i][j] = Obstacle;
-                var (isStuck, _) = SimulateGuardMovement(mapCopy, startPoint);
+                result += SimulateGuardMovement(mapCopy, startPoint) ? 1 : 0;
                 mapCopy[i][j] = 'X';
-
-                if (isStuck)
-                    result++;
             }
         }
-
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
     }
 }
