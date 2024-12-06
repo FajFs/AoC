@@ -9,8 +9,8 @@ public partial class Day06(
     private readonly ILogger<Day06> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly AdventOfCodeClient _client = _client ?? throw new ArgumentNullException(nameof(_client));
 
-    public record struct Direction(int X, int Y);
-    private record struct Guard(int X, int Y, Direction Direction = default);
+    public record struct Velocity(int Dx, int Dy);
+    private record struct Guard(int X, int Y, Velocity Velocity);
 
     private readonly char Start = '^';
     private readonly char Obstacle = '#';
@@ -20,24 +20,24 @@ public partial class Day06(
         for (int i = 0; i < map.Length; i++)
             for (int j = 0; j < map[i].Length; j++)
                 if (map[i][j] == Start)
-                    return new Guard(j, i);
+                    return new Guard(j, i, default);
         throw new InvalidOperationException("Start point not found in map");
     }
 
-    private static Direction TurnGuardRight(Direction direction) 
-        => direction switch
+    private static Velocity TurnGuardVelocityRight(Velocity velocity) 
+        => velocity switch
         {
-            { X: 0, Y: -1 } => direction with { X = 1, Y = 0 },
-            { X: 1, Y: 0 } => direction with { X = 0, Y = 1 },
-            { X: 0, Y: 1 } => direction with { X = -1, Y = 0 },
-            { X: -1, Y: 0 } => direction with { X = 0, Y = -1 },
-            _ => throw new InvalidOperationException("Invalid direction")
+            { Dx: 0, Dy: -1 } => velocity with { Dx = 1, Dy = 0 },
+            { Dx: 1, Dy: 0 } => velocity with { Dx = 0, Dy = 1 },
+            { Dx: 0, Dy: 1 } => velocity with { Dx = -1, Dy = 0 },
+            { Dx: -1, Dy: 0 } => velocity with { Dx = 0, Dy = -1 },
+            _ => throw new InvalidOperationException("Invalid velocity")
         };
 
     private (bool IsStuck, int visitedCount) SimulateGuardMovement(char[][] map, Guard startPoint)
     {
         var visitedTiles = new HashSet<Guard>();
-        var guard = startPoint with { Direction = new Direction(0, -1) };
+        var guard = startPoint with { Velocity = new Velocity(0, -1) };
 
         while (true)
         {
@@ -45,16 +45,17 @@ public partial class Day06(
             if (visitedTiles.Add(guard) is false)
                 return (true, 0);
 
-            var guardNextPosition = new Guard(guard.X + guard.Direction.X, guard.Y + guard.Direction.Y);
+            var guardNextPosition = new Guard(guard.X + guard.Velocity.Dx, guard.Y + guard.Velocity.Dy, guard.Velocity);
+
             //if we are out of bounds, we are not stuck
             if (guardNextPosition.Y < 0 || guardNextPosition.Y >= map.Length || guardNextPosition.X < 0 || guardNextPosition.X >= map[guardNextPosition.Y].Length)
-                return (false, visitedTiles.Select(Point => Point with { Direction = default }).ToHashSet().Count);
+                return (false, visitedTiles.Select(Point => Point with { Velocity = default }).ToHashSet().Count);
 
             guard = map[guardNextPosition.Y][guardNextPosition.X] == Obstacle
                 //if we hit an obsticle, turn right
-                ? guard = guard with { Direction = TurnGuardRight(guard.Direction) }
+                ? guard = guard with { Velocity = TurnGuardVelocityRight(guard.Velocity) }
                 //otherwise move forward
-                : guard = guardNextPosition with { Direction = guard.Direction };
+                : guard = guardNextPosition;
         }
     }
 
