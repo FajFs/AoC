@@ -97,7 +97,6 @@ public partial class Day06(
 
     public async Task SolvePart2()
     {
-        var timer = Stopwatch.StartNew();
         var input = await _client.GetInputAsync(2024, 6);
         var map = input.Split("\n")
             .Select(x => x.ToCharArray())
@@ -126,6 +125,5 @@ public partial class Day06(
         }
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
-        _logger.LogInformation("Time: {time}", timer.Elapsed);
     }
 }
