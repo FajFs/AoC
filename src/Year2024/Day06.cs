@@ -14,7 +14,7 @@ public partial class Day06(
 
     private readonly char Start = '^';
     private readonly char Obstacle = '#';
-
+    private readonly char Visited = 'X';
     private Guard GetGuardStartPoint(char[][] map)
     {
         for (int i = 0; i < map.Length; i++)
@@ -27,35 +27,57 @@ public partial class Day06(
     private static Velocity TurnGuardVelocityRight(Velocity velocity) 
         => velocity switch
         {
-            { Dx: 0, Dy: -1 } => velocity with { Dx = 1, Dy = 0 },
-            { Dx: 1, Dy: 0 } => velocity with { Dx = 0, Dy = 1 },
-            { Dx: 0, Dy: 1 } => velocity with { Dx = -1, Dy = 0 },
-            { Dx: -1, Dy: 0 } => velocity with { Dx = 0, Dy = -1 },
+            { Dx: 0, Dy: -1 } => new(1, 0),
+            { Dx: 1, Dy: 0 } => new(0, 1),
+            { Dx: 0, Dy: 1 } => new(-1, 0),
+            { Dx: -1, Dy: 0 } => new (0, -1),
+            _ => throw new InvalidOperationException("Invalid velocity")
+        };
+
+    private static int MapVelocityToIndex(Velocity velocity)
+        => velocity switch
+        {
+            { Dx: 0, Dy: -1 } => 0,
+            { Dx: 1, Dy: 0 } => 1,
+            { Dx: 0, Dy: 1 } => 2,
+            { Dx: -1, Dy: 0 } => 3,
             _ => throw new InvalidOperationException("Invalid velocity")
         };
 
     private (bool IsStuck, int visitedCount) SimulateGuardMovement(char[][] map, Guard startPoint)
     {
-        var visitedTiles = new HashSet<Guard>();
         var guard = startPoint with { Velocity = new Velocity(0, -1) };
-
+        var visitedTiles = new bool[map.Length, map[0].Length, 4]; //4 is the number of possible velocities
+        var visitedCount = 0;
         while (true)
         {
+            var velocityIndex = MapVelocityToIndex(guard.Velocity);
             //if we have visited this point before, we are stuck
-            if (visitedTiles.Add(guard) is false)
+            if (visitedTiles[guard.Y, guard.X, velocityIndex])
                 return (true, 0);
 
-            var guardNextPosition = new Guard(guard.X + guard.Velocity.Dx, guard.Y + guard.Velocity.Dy, guard.Velocity);
+            visitedTiles[guard.Y, guard.X, velocityIndex] = true;
+            if (map[guard.Y][guard.X] != Visited)
+                visitedCount++;
+
+            //mark the current point as visited
+            map[guard.Y][guard.X] =  Visited;
+            var nextX = guard.X + guard.Velocity.Dx;
+            var nextY = guard.Y + guard.Velocity.Dy;
 
             //if we are out of bounds, we are not stuck
-            if (guardNextPosition.Y < 0 || guardNextPosition.Y >= map.Length || guardNextPosition.X < 0 || guardNextPosition.X >= map[guardNextPosition.Y].Length)
-                return (false, visitedTiles.Select(Point => Point with { Velocity = default }).ToHashSet().Count);
+            if (nextY < 0 || nextY >= map.Length || nextX < 0 || nextX >= map[nextY].Length)
+                return (false, visitedCount);
 
-            guard = map[guardNextPosition.Y][guardNextPosition.X] == Obstacle
-                //if we hit an obsticle, turn right
-                ? guard = guard with { Velocity = TurnGuardVelocityRight(guard.Velocity) }
-                //otherwise move forward
-                : guard = guardNextPosition;
+            if (map[nextY][nextX] == Obstacle)
+            {
+                guard.Velocity = TurnGuardVelocityRight(guard.Velocity);
+            }
+            else
+            {
+                guard.X = nextX;
+                guard.Y = nextY;
+            }
         }
     }
 
@@ -75,31 +97,35 @@ public partial class Day06(
 
     public async Task SolvePart2()
     {
+        var timer = Stopwatch.StartNew();
         var input = await _client.GetInputAsync(2024, 6);
         var map = input.Split("\n")
             .Select(x => x.ToCharArray())
             .ToArray();
 
-        var mapVariants = map
-            .SelectMany((row, i) =>
-                row.Select((character, j) => (i, j, character)))
-            .Where(x => x.character != Start && x.character != Obstacle)
-            .Select(x =>
-            {
-                var mapVariant = map.Select(row => row.ToArray()).ToArray();
-                mapVariant[x.i][x.j] = Obstacle;
-                return mapVariant;
-            });
-
+        //Do a dry run to find the path of the guard
         var startPoint = GetGuardStartPoint(map);
+        SimulateGuardMovement(map, startPoint);
 
-        //if you cannot outsmart them with code, beat them with parallelism and brute force
-        var tasks = mapVariants.Select(mapVariant =>
-            Task.Run(() => SimulateGuardMovement(mapVariant, startPoint)));
+        var mapCopy = map.Select(row => row.ToArray()).ToArray();
+        var result = 0;
+        for (var i = 0; i < map.Length; i++)
+        {
+            for (var j = 0; j < map[i].Length; j++)
+            {
+                if (map[i][j] != 'X')
+                    continue;
 
-        var result = (await Task.WhenAll(tasks))
-            .Count(x => x.IsStuck);
+                mapCopy[i][j] = Obstacle;
+                var (isStuck, _) = SimulateGuardMovement(mapCopy, startPoint);
+                mapCopy[i][j] = 'X';
+
+                if (isStuck)
+                    result++;
+            }
+        }
 
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
+        _logger.LogInformation("Time: {time}", timer.Elapsed);
     }
 }
