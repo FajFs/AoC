@@ -10,19 +10,17 @@ public partial class Day06(
     private readonly AdventOfCodeClient _client = _client ?? throw new ArgumentNullException(nameof(_client));
 
     public record struct Direction(int X, int Y);
-    private record struct Coordinate(int X, int Y, Direction? Direction = null);
+    private record struct Guard(int X, int Y, Direction Direction = default);
 
     private readonly char Start = '^';
     private readonly char Obstacle = '#';
 
-    private readonly char Visited = 'V';
-
-    private Coordinate GetGuardStartPoint(char[][] map)
+    private Guard GetGuardStartPoint(char[][] map)
     {
         for (int i = 0; i < map.Length; i++)
             for (int j = 0; j < map[i].Length; j++)
                 if (map[i][j] == Start)
-                    return new Coordinate(j, i);
+                    return new Guard(j, i);
         throw new InvalidOperationException("Start point not found in map");
     }
 
@@ -36,34 +34,27 @@ public partial class Day06(
             _ => throw new InvalidOperationException("Invalid direction")
         };
 
-    private (bool IsStuck, int visitedCount) SimulateGuardMovement(char[][] map, Coordinate startPoint)
+    private (bool IsStuck, int visitedCount) SimulateGuardMovement(char[][] map, Guard startPoint)
     {
-        var visited = new HashSet<Coordinate>();
-        var direction = new Direction(0, -1);
-        var guard = startPoint with { Direction = direction };
+        var visitedTiles = new HashSet<Guard>();
+        var guard = startPoint with { Direction = new Direction(0, -1) };
 
         while (true)
         {
             //if we have visited this point before, we are stuck
-            if (visited.Add(guard) is false)
+            if (visitedTiles.Add(guard) is false)
                 return (true, 0);
 
-            var guardLookAhead = new Coordinate(guard.X + direction.X, guard.Y + direction.Y);
+            var guardNextPosition = new Guard(guard.X + guard.Direction.X, guard.Y + guard.Direction.Y);
             //if we are out of bounds, we are not stuck
-            if (guardLookAhead.Y < 0 || guardLookAhead.Y >= map.Length || guardLookAhead.X < 0 || guardLookAhead.X >= map[guardLookAhead.Y].Length)
-                return (false, visited.Select(Point => Point with { Direction = null }).ToHashSet().Count);
+            if (guardNextPosition.Y < 0 || guardNextPosition.Y >= map.Length || guardNextPosition.X < 0 || guardNextPosition.X >= map[guardNextPosition.Y].Length)
+                return (false, visitedTiles.Select(Point => Point with { Direction = default }).ToHashSet().Count);
 
-            //if we hit an obsticle, turn right
-            if (map[guardLookAhead.Y][guardLookAhead.X] == Obstacle)
-            {
-                direction = TurnGuardRight(direction);
-                guard = guard with { Direction = direction };
-            }
-            //otherwise move forward
-            else
-            {
-                guard = guardLookAhead with { Direction = direction };
-            }
+            guard = map[guardNextPosition.Y][guardNextPosition.X] == Obstacle
+                //if we hit an obsticle, turn right
+                ? guard = guard with { Direction = TurnGuardRight(guard.Direction) }
+                //otherwise move forward
+                : guard = guardNextPosition with { Direction = guard.Direction };
         }
     }
 
@@ -101,7 +92,7 @@ public partial class Day06(
 
         var startPoint = GetGuardStartPoint(map);
 
-        //if you cannot outsmart them with code, outsmart them with parallelism and brute force
+        //if you cannot outsmart them with code, beat them with parallelism and brute force
         var tasks = mapVariants.Select(mapVariant =>
             Task.Run(() => SimulateGuardMovement(mapVariant, startPoint)));
 
