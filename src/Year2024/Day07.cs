@@ -38,8 +38,7 @@ public partial class Day07(
             .Select(x => _helper.MatchDigit()
                 .Matches(x)
                 .Select(m => m.Value)
-                .Select(long.Parse)
-                .ToList());
+                .Select(long.Parse));
 
         var result = equations
             .Where(x => CanSolveEquationRec(x.First(), x.Skip(1).ToList()))
@@ -57,9 +56,7 @@ public partial class Day07(
             .Select(x => _helper.MatchDigit()
                 .Matches(x)
                 .Select(m => m.Value)
-                .Select(long.Parse)
-                .ToList())
-            .ToList();
+                .Select(long.Parse));
 
         //find the failing equation to reduce search space
         var result = equations
