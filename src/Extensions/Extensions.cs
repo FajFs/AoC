@@ -16,6 +16,7 @@ public static class Extensions
 
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(logger);
+        Log.Logger = logger;
 
         // add user secrets
         builder.Configuration.AddUserSecrets<AocCookie>();

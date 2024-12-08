@@ -11,3 +11,4 @@ global using Serilog;
 global using Serilog.Events;
 global using System.Net;
 global using System.Text.RegularExpressions;
+global using System.Diagnostics;
