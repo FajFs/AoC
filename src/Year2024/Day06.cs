@@ -9,8 +9,7 @@ public partial class Day06(
     private readonly ILogger<Day06> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly AdventOfCodeClient _client = _client ?? throw new ArgumentNullException(nameof(_client));
 
-    public record struct Velocity(int Dx, int Dy);
-    private record struct Guard(int X, int Y, Velocity Velocity);
+    private record struct Guard(int X, int Y);
 
     private readonly char Start = '^';
     private readonly char Obstacle = '#';
@@ -20,55 +19,56 @@ public partial class Day06(
         for (int i = 0; i < map.Length; i++)
             for (int j = 0; j < map[i].Length; j++)
                 if (map[i][j] == Start)
-                    return new Guard(j, i, default);
+                    return new Guard(j, i);
         throw new InvalidOperationException("Start point not found in map");
     }
 
-    private static Velocity TurnGuardVelocityRight(Velocity velocity) 
+    private static int TurnGruardRight(int velocity)
         => velocity switch
         {
-            { Dx: 0, Dy: -1 } => new(1, 0),
-            { Dx: 1, Dy: 0 } => new(0, 1),
-            { Dx: 0, Dy: 1 } => new(-1, 0),
-            { Dx: -1, Dy: 0 } => new (0, -1),
+            0 => 1,
+            1 => 2,
+            2 => 3,
+            3 => 0,
             _ => throw new InvalidOperationException("Invalid velocity")
         };
 
-    private static int MapVelocityToIndex(Velocity velocity)
+    private static (int dx, int dy) MapIndexToVelocity(int velocity)
         => velocity switch
         {
-            { Dx: 0, Dy: -1 } => 0,
-            { Dx: 1, Dy: 0 } => 1,
-            { Dx: 0, Dy: 1 } => 2,
-            { Dx: -1, Dy: 0 } => 3,
+            0 => (0, -1),
+            1 => (1, 0),
+            2 => (0, 1),
+            3 => (-1, 0),
             _ => throw new InvalidOperationException("Invalid velocity")
         };
 
-    private bool SimulateGuardMovement(char[][] map, Guard startPoint)
+
+    private bool SimulateGuardMovement(char[][] map, Guard guard)
     {
-        var guard = startPoint with { Velocity = new Velocity(0, -1) };
+        var velocity = 0; //0 up, 1 right, 2 down, 3 left
         var visitedTilesWithVelocity = new bool[map.Length, map[0].Length, 4]; //4 is the number of possible velocities
         while (true)
         {
-            var velocityIndex = MapVelocityToIndex(guard.Velocity);
             //if we have visited this point before, we are stuck
-            if (visitedTilesWithVelocity[guard.Y, guard.X, velocityIndex])
+            if (visitedTilesWithVelocity[guard.Y, guard.X, velocity])
                 return true;
 
-            visitedTilesWithVelocity[guard.Y, guard.X, velocityIndex] = true;
+            visitedTilesWithVelocity[guard.Y, guard.X, velocity] = true;
 
             //mark the current point as visited
             map[guard.Y][guard.X] = Visited;
 
-            var nextX = guard.X + guard.Velocity.Dx;
-            var nextY = guard.Y + guard.Velocity.Dy;
+            var (dx, dy) = MapIndexToVelocity(velocity);
+            var nextX = guard.X + dx;
+            var nextY = guard.Y + dy;
 
             //if we are out of bounds, we are not stuck
             if (nextY < 0 || nextY >= map.Length || nextX < 0 || nextX >= map[nextY].Length)
                 return false;
 
             if (map[nextY][nextX] == Obstacle)
-                guard.Velocity = TurnGuardVelocityRight(guard.Velocity);
+                velocity = TurnGruardRight(velocity);
             else
             {
                 guard.X = nextX;
@@ -108,12 +108,12 @@ public partial class Day06(
         {
             for (var j = 0; j < map[i].Length; j++)
             {
-                if (map[i][j] != 'X')
+                if (map[i][j] != Visited)
                     continue;
 
                 mapCopy[i][j] = Obstacle;
                 result += SimulateGuardMovement(mapCopy, startPoint) ? 1 : 0;
-                mapCopy[i][j] = 'X';
+                mapCopy[i][j] = Visited;
             }
         }
         _logger.LogInformation("{part}: {result}", nameof(SolvePart2), result);
