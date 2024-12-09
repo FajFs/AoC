@@ -2,4 +2,4 @@
 builder.AddApplicationDefaults();
 var app = builder.Build(); 
 
-await app.ResolveAocDay(day: 6).SolveAsync();
+await app.ResolveAocDay().SolveAsync();
