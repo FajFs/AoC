@@ -142,8 +142,7 @@ public partial class Day09(
 
             //update the empty memory slot
             var emptyMemorySlotIndex = emptyMemorySlots.IndexOf(emptyMemorySlot);
-            emptyMemorySlot = (emptyMemorySlot.startIndex + occurences, emptyMemorySlot.slotSize - occurences);
-            emptyMemorySlots[emptyMemorySlotIndex] = emptyMemorySlot;
+            emptyMemorySlots[emptyMemorySlotIndex] = (emptyMemorySlot.startIndex + occurences, emptyMemorySlot.slotSize - occurences);
         }
 
         var result = CalculateChecksum(memory);
